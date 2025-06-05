@@ -1,0 +1,68 @@
+{
+  "name": "yasm",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "YASM is a straightforward, lightweight state management library for React that simplifies data fetching and caching.",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./debug": {
+      "types": "./dist/debug/index.d.ts",
+      "import": "./dist/debug/index.js",
+      "require": "./dist/debug/index.cjs"
+    },
+    "./persist": {
+      "types": "./dist/persist/index.d.ts",
+      "import": "./dist/persist/index.js",
+      "require": "./dist/persist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "cross-env NODE_ENV=production tsup",
+    "build:core": "cross-env NODE_ENV=production YASM_CORE_ONLY=true tsup",
+    "build:no-persist": "cross-env NODE_ENV=production YASM_NO_PERSIST=true tsup",
+    "dev": "cross-env NODE_ENV=development tsup --watch",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run type-check && npm run build"
+  },
+  "keywords": [
+    "react",
+    "cache",
+    "swr",
+    "hooks",
+    "lightweight",
+    "simple",
+    "useState",
+    "data-fetching"
+  ],
+  "author": "Emmanuel Madehin",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "^4.41.1",
+    "@types/react": "^18.0.0",
+    "cross-env": "^7.0.3",
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tobimadehin/yasm.git"
+  },
+  "homepage": "https://yasm.dev",
+  "bugs": {
+    "url": "https://github.com/tobimadehin/yasm/issues"
+  }
+}

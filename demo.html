@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YASM Demo</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .demo-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-loading {
+            background-color: #3b82f6;
+        }
+
+        .status-success {
+            background-color: #10b981;
+        }
+
+        .status-error {
+            background-color: #ef4444;
+        }
+
+        .status-cached {
+            background-color: #8b5cf6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        button {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        button:hover {
+            background: #f9fafb;
+        }
+
+        .data-display {
+            background: #f8fafc;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 8px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #64748b;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="react">
+        const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+        // Enhanced YASM implementation (condensed version for demo)
+        const TIME_UNITS = {
+            ms: 1, s: 1000, m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000
+        };
+
+        function parseTime(input) {
+            if (typeof input === 'number') return input;
+            const match = input.match(/^(\d+)([a-z]+)$/i);
+            if (!match) throw new Error(`Invalid time format: ${input}`);
+            const [, value, unit] = match;
+            const multiplier = TIME_UNITS[unit.toLowerCase()];
+            if (!multiplier) throw new Error(`Unknown time unit: ${unit}`);
+            return parseInt(value) * multiplier;
+        }
+
+        class SimpleStorage {
+            constructor() {
+                this.cache = new Map();
+                this.prefix = 'yasm_demo_';
+                this.isSupported = typeof localStorage !== 'undefined';
+                this.loadFromStorage();
+            }
+
+            buildKey(key) { return `${this.prefix}${key}`; }
+
+            loadFromStorage() {
+                if (!this.isSupported) return;
+                try {
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const storageKey = localStorage.key(i);
+                        if (!storageKey?.startsWith(this.prefix)) continue;
+                        const key = storageKey.replace(this.prefix, '');
+                        const stored = localStorage.getItem(storageKey);
+                        if (!stored) continue;
+                        const item = JSON.parse(stored);
+                        if (Date.now() >= item.expiresAt) {
+                            localStorage.removeItem(storageKey);
+                            continue;
+                        }
+                        this.cache.set(key, item);
+                    }
+                } catch (error) {
+                    console.warn('Failed to load cache:', error);
+                }
+            }
+
+            get(key) {
+                const item = this.cache.get(key);
+                if (!item) return null;
+                if (Date.now() >= item.expiresAt) {
+                    this.remove(key);
+                    return null;
+                }
+                return item.data;
+            }
+
+            set(key, data, ttl) {
+                const parsedTTL = typeof ttl === 'string' ? parseTime(ttl) : ttl;
+                const now = Date.now();
+                const item = {
+                    data, timestamp: now, ttl: parsedTTL, expiresAt: now + parsedTTL,
+                    hits: 0, lastAccess: now, size: JSON.stringify(data).length * 2
+                };
+                this.cache.set(key, item);
+                if (this.isSupported) {
+                    try {
+                        localStorage.setItem(this.buildKey(key), JSON.stringify(item));
+                    } catch { }
+                }
+                return true;
+            }
+
+            remove(key) {
+                this.cache.delete(key);
+                if (this.isSupported) {
+                    try {
+                        localStorage.removeItem(this.buildKey(key));
+                    } catch { }
+                }
+                return true;
+            }
+
+            clear() {
+                this.cache.clear();
+                if (this.isSupported) {
+                    try {
+                        const keys = [];
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key?.startsWith(this.prefix)) keys.push(key);
+                        }
+                        keys.forEach(key => localStorage.removeItem(key));
+                    } catch { }
+                }
+            }
+
+            getStats() {
+                const items = Array.from(this.cache.values());
+                return {
+                    itemCount: this.cache.size,
+                    totalSize: items.reduce((sum, item) => sum + item.size, 0),
+                    totalHits: items.reduce((sum, item) => sum + item.hits, 0),
+                };
+            }
+        }
+
+        const storage = new SimpleStorage();
+        const activeRequests = new Map();
+        const refreshIntervals = new Map();
+
+        // Enhanced useData hook with all features
+        function useData(key, fetcher, refreshInterval = false, options = {}) {
+            const [data, setData] = useState(() => storage.get(key));
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [isFromCache, setIsFromCache] = useState(false);
+            const mountedRef = useRef(true);
+
+            const refreshMs = useMemo(() => {
+                if (refreshInterval === false) return null;
+                try { return parseTime(refreshInterval); }
+                catch { return null; }
+            }, [refreshInterval]);
+
+            const enhancedFetcher = useCallback(async (isBackground = false) => {
+                if (!key || !fetcher) return undefined;
+
+                const existingRequest = activeRequests.get(key);
+                if (existingRequest) {
+                    try { return await existingRequest; }
+                    catch (error) {
+                        const cached = storage.get(key);
+                        if (cached) return cached;
+                        throw error;
+                    }
+                }
+
+                const requestPromise = (async () => {
+                    try {
+                        const result = await fetcher();
+                        if (result !== undefined && refreshMs) {
+                            storage.set(key, result, refreshMs);
+                        }
+                        return result;
+                    } finally {
+                        activeRequests.delete(key);
+                    }
+                })();
+
+                activeRequests.set(key, requestPromise);
+                return requestPromise;
+            }, [key, fetcher, refreshMs]);
+
+            // Initial load effect
+            useEffect(() => {
+                if (!key || !fetcher) return;
+                let isMounted = true;
+
+                const loadData = async () => {
+                    const cached = storage.get(key);
+                    if (cached && isMounted) {
+                        setData(cached);
+                        setIsFromCache(true);
+                        setLoading(false);
+                        setError(null);
+                    } else {
+                        setLoading(true);
+                        setIsFromCache(false);
+                    }
+
+                    try {
+                        const freshData = await enhancedFetcher(!!cached);
+                        if (isMounted && freshData !== undefined) {
+                            setData(freshData);
+                            setIsFromCache(false);
+                            setError(null);
+                        }
+                    } catch (err) {
+                        if (!isMounted) return;
+                        if (cached) {
+                            setData(cached);
+                            setIsFromCache(true);
+                            setError(err);
+                        } else {
+                            setData(undefined);
+                            setIsFromCache(false);
+                            setError(err);
+                        }
+                    } finally {
+                        if (isMounted) setLoading(false);
+                    }
+                };
+
+                loadData();
+                return () => { isMounted = false; };
+            }, [key, fetcher, enhancedFetcher]);
+
+            // Auto-refresh effect
+            useEffect(() => {
+                if (!key || !refreshMs || refreshMs <= 0) return;
+
+                const existingInterval = refreshIntervals.get(key);
+                if (existingInterval) clearInterval(existingInterval);
+
+                const interval = setInterval(async () => {
+                    if (!mountedRef.current) return;
+                    try {
+                        const freshData = await enhancedFetcher(true);
+                        if (mountedRef.current && freshData !== undefined) {
+                            setData(freshData);
+                            setIsFromCache(false);
+                            setError(null);
+                        }
+                    } catch (err) {
+                        if (mountedRef.current) setError(err);
+                    }
+                }, refreshMs);
+
+                refreshIntervals.set(key, interval);
+                return () => {
+                    clearInterval(interval);
+                    refreshIntervals.delete(key);
+                };
+            }, [key, refreshMs, enhancedFetcher]);
+
+            const refresh = useCallback(async () => {
+                if (!key || !fetcher) return;
+                setLoading(true);
+                setError(null);
+                try {
+                    const freshData = await enhancedFetcher(false);
+                    if (mountedRef.current && freshData !== undefined) {
+                        setData(freshData);
+                        setIsFromCache(false);
+                    }
+                } catch (err) {
+                    if (!mountedRef.current) return;
+                    const cached = storage.get(key);
+                    if (cached) {
+                        setData(cached);
+                        setIsFromCache(true);
+                    }
+                    setError(err);
+                } finally {
+                    if (mountedRef.current) setLoading(false);
+                }
+            }, [key, fetcher, enhancedFetcher]);
+
+            const clear = useCallback(() => {
+                if (!key) return;
+                storage.remove(key);
+                setData(undefined);
+                setIsFromCache(false);
+                setError(null);
+            }, [key]);
+
+            useEffect(() => {
+                mountedRef.current = true;
+                return () => { mountedRef.current = false; };
+            }, []);
+
+            return { data, loading, error, refresh, clear, isFromCache };
+        }
+
+        // Mock APIs for demo
+        const api = {
+            fetchUser: async (userId) => {
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+                if (Math.random() < 0.1) throw new Error('Network error');
+                return {
+                    id: userId,
+                    name: `User ${userId}`,
+                    email: `user${userId}@example.com`,
+                    lastSeen: new Date().toISOString(),
+                    avatar: `👤`,
+                };
+            },
+
+            fetchMetrics: async () => {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                if (Math.random() < 0.05) throw new Error('Metrics service unavailable');
+                return {
+                    activeUsers: Math.floor(Math.random() * 1000),
+                    revenue: Math.floor(Math.random() * 100000),
+                    orders: Math.floor(Math.random() * 500),
+                    timestamp: new Date().toISOString()
+                };
+            },
+
+            fetchPosts: async () => {
+                await new Promise(resolve => setTimeout(resolve, 600));
+                return Array.from({ length: 5 }, (_, i) => ({
+                    id: i + 1,
+                    title: `Post ${i + 1}`,
+                    content: `Content for post ${i + 1}`,
+                    timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString()
+                }));
+            }
+        };
+
+        // Demo Components
+        function UserProfile({ userId }) {
+            const { data: user, loading, error, refresh, clear, isFromCache } = useData(
+                `user-${userId}`,
+                () => api.fetchUser(userId),
+                '30s'
+            );
+
+            const getStatus = () => {
+                if (loading) return { color: 'status-loading', text: 'Loading' };
+                if (error) return { color: 'status-error', text: 'Error' };
+                if (isFromCache) return { color: 'status-cached', text: 'Cached' };
+                return { color: 'status-success', text: 'Fresh' };
+            };
+
+            const status = getStatus();
+
+            return (
+                <div className="demo-box">
+                    <h3>
+                        <span className={`status-indicator ${status.color}`}></span>
+                        User Profile ({status.text})
+                    </h3>
+
+                    {error ? (
+                        <div style={{ color: '#ef4444', fontSize: '14px' }}>
+                            ⚠️ {error.message}
+                            {user && <div style={{ marginTop: '8px', color: '#6b7280' }}>
+                                Showing cached data
+                            </div>}
+                        </div>
+                    ) : null}
+
+                    <div className="data-display">
+                        {loading && !user ? 'Loading user...' :
+                            user ? JSON.stringify(user, null, 2) : 'No data'}
+                    </div>
+
+                    <div className="controls">
+                        <button onClick={refresh}>Refresh</button>
+                        <button onClick={clear}>Clear Cache</button>
+                    </div>
+                </div>
+            );
+        }
+
+        function MetricsDashboard() {
+            const { data: metrics, loading, error, isFromCache } = useData(
+                'dashboard-metrics',
+                api.fetchMetrics,
+                '10s'
+            );
+
+            return (
+                <div className="demo-box">
+                    <h3>
+                        <span className={`status-indicator ${loading ? 'status-loading' :
+                            error ? 'status-error' :
+                                isFromCache ? 'status-cached' : 'status-success'
+                            }`}></span>
+                        Live Metrics (Auto-refresh: 10s)
+                    </h3>
+
+                    {error && (
+                        <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '12px' }}>
+                            ⚠️ {error.message}
+                        </div>
+                    )}
+
+                    {metrics ? (
+                        <div className="metrics">
+                            <div className="metric">
+                                <div className="metric-value">{metrics.activeUsers}</div>
+                                <div className="metric-label">Active Users</div>
+                            </div>
+                            <div className="metric">
+                                <div className="metric-value">${metrics.revenue.toLocaleString()}</div>
+                                <div className="metric-label">Revenue</div>
+                            </div>
+                            <div className="metric">
+                                <div className="metric-value">{metrics.orders}</div>
+                                <div className="metric-label">Orders</div>
+                            </div>
+                            <div className="metric">
+                                <div className="metric-value">
+                                    {isFromCache ? '📦' : '🔄'}
+                                </div>
+                                <div className="metric-label">Status</div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="data-display">
+                            {loading ? 'Loading metrics...' : 'No data available'}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function PostsList() {
+            const { data: posts, loading, error, refresh, isFromCache } = useData(
+                'posts-list',
+                api.fetchPosts,
+                false // No auto-refresh
+            );
+
+            return (
+                <div className="demo-box">
+                    <h3>
+                        <span className={`status-indicator ${loading ? 'status-loading' :
+                            error ? 'status-error' :
+                                isFromCache ? 'status-cached' : 'status-success'
+                            }`}></span>
+                        Posts (Manual refresh only)
+                    </h3>
+
+                    {error && (
+                        <div style={{ color: '#ef4444', fontSize: '14px' }}>
+                            ⚠️ {error.message}
+                        </div>
+                    )}
+
+                    <div className="data-display">
+                        {loading && !posts ? 'Loading posts...' :
+                            posts ? posts.map(post =>
+                                `${post.id}. ${post.title}\n`
+                            ).join('') : 'No posts'}
+                    </div>
+
+                    <div className="controls">
+                        <button onClick={refresh} disabled={loading}>
+                            {loading ? 'Loading...' : 'Refresh Posts'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function CacheStats() {
+            const [stats, setStats] = useState(storage.getStats());
+
+            useEffect(() => {
+                const updateStats = () => setStats(storage.getStats());
+                const interval = setInterval(updateStats, 2000);
+                updateStats();
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div className="demo-box">
+                    <h3>Cache Statistics</h3>
+                    <div className="metrics">
+                        <div className="metric">
+                            <div className="metric-value">{stats.itemCount}</div>
+                            <div className="metric-label">Cached Items</div>
+                        </div>
+                        <div className="metric">
+                            <div className="metric-value">{Math.round(stats.totalSize / 1024)}KB</div>
+                            <div className="metric-label">Cache Size</div>
+                        </div>
+                        <div className="metric">
+                            <div className="metric-value">{stats.totalHits}</div>
+                            <div className="metric-label">Total Hits</div>
+                        </div>
+                        <div className="metric">
+                            <div className="metric-value">
+                                {activeRequests.size > 0 ? '🔄' : '✅'}
+                            </div>
+                            <div className="metric-label">Active Requests</div>
+                        </div>
+                    </div>
+
+                    <div className="controls">
+                        <button onClick={() => storage.clear()}>Clear All Cache</button>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [userId, setUserId] = useState(1);
+
+            return (
+                <div>
+                    <h1>YASM Enhanced Demo</h1>
+                    <p>
+                        This demo showcases the enhanced YASM features: stale-while-revalidate,
+                        request deduplication, auto-refresh, localStorage persistence, and graceful error handling.
+                    </p>
+
+                    <div className="demo-section">
+                        <h2>User Selection</h2>
+                        <div style={{ marginBottom: '16px' }}>
+                            <label>
+                                User ID:
+                                <select
+                                    value={userId}
+                                    onChange={(e) => setUserId(Number(e.target.value))}
+                                    style={{ marginLeft: '8px', padding: '4px' }}
+                                >
+                                    {[1, 2, 3, 4, 5].map(id =>
+                                        <option key={id} value={id}>User {id}</option>
+                                    )}
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="demo-grid">
+                        <UserProfile userId={userId} />
+                        <MetricsDashboard />
+                        <PostsList />
+                        <CacheStats />
+                    </div>
+
+                    <div className="demo-section">
+                        <h2>Features Demonstrated</h2>
+                        <ul>
+                            <li><strong>Stale-while-revalidate:</strong> Shows cached data instantly while fetching fresh data</li>
+                            <li><strong>Auto-refresh:</strong> Metrics update every 10s, User profile every 30s</li>
+                            <li><strong>Request deduplication:</strong> Multiple components requesting same data won't cause duplicate requests</li>
+                            <li><strong>Persistence:</strong> Data survives page refresh (try refreshing the page)</li>
+                            <li><strong>Error handling:</strong> Shows cached data when requests fail (~10% error rate)</li>
+                            <li><strong>Human-readable intervals:</strong> '10s', '30s', '5m' instead of milliseconds</li>
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+
+</html>
