@@ -1,6 +1,6 @@
 {
   "name": "@tobimadehin/yasm",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": false,
   "type": "module",
   "description": "YASM is a straightforward, lightweight state management library for React that simplifies data fetching and caching.",
