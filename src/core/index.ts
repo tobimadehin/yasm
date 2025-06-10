@@ -102,11 +102,27 @@ const TIME_UNITS: Record<string, number> = {
 // Simple configuration check
 const isDebugMode = (): boolean => {
   try {
-    // Try to read from package.json
-    const pkg = require("../../package.json");
-    return pkg.yasm?.debug === true;
+    // Check explicit configuration first
+    if (globalConfig.debug === true) {
+      return true;
+    }
+    if (globalConfig.debug === false) {
+      return false;
+    }
+
+    // Auto-detect development environment (works with most bundlers)
+    if (
+      typeof process !== "undefined" &&
+      process.env?.NODE_ENV === "development"
+    ) {
+      return true;
+    }
+    // Check for explicit browser debug flag override
+    if (typeof window !== "undefined" && (window as any).__YASM_DEBUG__) {
+      return true;
+    }
+    return false;
   } catch {
-    // If package.json doesn't exist or doesn't have yasm config, default to production
     return false;
   }
 };
@@ -114,6 +130,7 @@ const isDebugMode = (): boolean => {
 // Global configuration
 interface YasmConfig {
   isDevelopment: boolean;
+  debug?: boolean;
 }
 
 const defaultConfig: YasmConfig = {
@@ -323,7 +340,7 @@ export class YasmStore {
       this.saveToStorage(key, item);
       return true;
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
+      if (isDebugMode()) {
         console.warn("Failed to set cache item:", error);
       }
       return false;
@@ -374,7 +391,7 @@ export class YasmStore {
       try {
         localStorage.removeItem(this.prefix + key);
       } catch (error) {
-        if (process.env.NODE_ENV === "development") {
+        if (isDebugMode()) {
           console.warn("LocalStorage remove failed:", error);
         }
       }
@@ -422,7 +439,7 @@ export class YasmStore {
           }
           keysToRemove.forEach((key) => localStorage.removeItem(key));
         } catch (error) {
-          if (process.env.NODE_ENV === "development") {
+          if (isDebugMode()) {
             console.warn("LocalStorage clear failed:", error);
           }
         }
