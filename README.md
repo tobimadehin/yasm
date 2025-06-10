@@ -4,7 +4,8 @@ YASM is a lightweight state management library that simplifies data fetching and
 
 [![npm version](https://img.shields.io/npm/v/@tobimadehin/yasm.svg)](https://www.npmjs.com/package/@tobimadehin/yasm)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
-[![Bundle Size](https://img.shields.io/bundlephobia/min/@tobimadehin/yasm)](https://bundlephobia.com/package/@tobimadehin/yasm)
+[![Minified Size](https://img.shields.io/bundlephobia/min/@tobimadehin/yasm)](https://bundlephobia.com/package/@tobimadehin/yasm)
+[![Gzipped Size](https://img.shields.io/bundlephobia/minzip/@tobimadehin/yasm)](https://bundlephobia.com/package/@tobimadehin/yasm)
 
 ## ⚡ What's is YASM
 
