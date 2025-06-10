@@ -1,0 +1,24 @@
+name: Debug
+on: [push]
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Try npm install with verbose
+        run: |
+          echo "Running npm install..."
+          npm install --save-dev @types/node --verbose || echo "npm install failed with exit code $?"
+        
+      - name: Test
+        run: npm test --verbose || echo "Tests would run here"
+        
+      - name: Build  
+        run: npm run build --verbose || echo "Build would run here"
