@@ -34,7 +34,7 @@
     "build:debug": "cross-env NODE_ENV=development tsup",
     "dev": "cross-env NODE_ENV=development tsup --watch",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run type-check && npm run build",
+    "prepublishOnly": "npm run type-check && npm run build:debug",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
