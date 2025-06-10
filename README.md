@@ -10,7 +10,7 @@ YASM is a lightweight state management library that simplifies data fetching and
 
 A lightweight state manager built on React hooks. No additional dependencies, no boilerplate code. Includes automatic localStorage persistence and real-time state synchronization.
 
-### 🎯 **Core Philosophy: "useState but better"**
+### 🎯 **Core Philosophy: "Enhanced useState"**
 
 ```tsx
 // Before: useState
