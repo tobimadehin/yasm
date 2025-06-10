@@ -2,9 +2,9 @@
 
 YASM is a lightweight state management library that simplifies data fetching and caching, with no external dependencies.
 
-[![npm version](https://badge.fury.io/js/yasm.svg)](https://badge.fury.io/js/yasm)
+[![npm version](https://badge.fury.io/js/%40tobimadehin%2Fyasm.svg)](https://badge.fury.io/js/%40tobimadehin%2Fyasm)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/yasm)](https://bundlephobia.com/package/yasm)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@tobimadehin/yasm)](https://bundlephobia.com/package/@tobimadehin/yasm)
 
 ## ⚡ What's is YASM
 
@@ -76,7 +76,7 @@ pnpm add yasm
 
 ### Basic Usage
 ```tsx
-import { useData } from 'yasm';
+import { useData } from '@tobimadehin/yasm';
 
 function UserProfile({ userId }) {
   const { 
@@ -120,7 +120,7 @@ const { data } = useData('key', fetcher, '1m', {
 ![YASM Debug Monitor](monitor.gif)
 
 ```tsx
-import { useData } from "yasm";
+import { useData } from "@tobimadehin/yasm";
 import { 
   YasmDebugMonitor, 
 } from 'yasm/debug';
@@ -181,7 +181,7 @@ Note: Yasm Debug tools are automatically removed from production builds through 
 
 ### Preloading
 ```tsx
-import { preload } from 'yasm';
+import { preload } from '@tobimadehin/yasm';
 
 // Preload critical data
 await preload('user-profile', fetchUser, '10m');
