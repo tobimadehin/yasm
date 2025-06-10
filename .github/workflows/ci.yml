@@ -27,17 +27,22 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          
       - name: Install dependencies
-        run: npm install --save-dev @types/node --verbose || echo "npm install failed with exit code $?"
+        run: pnpm install
         
       - name: Run tests
-        run: npm test --verbose || echo "Tests would run here"
+        run: pnpm test
         
       - name: Build
-        run: npm run build --verbose || echo "Build would run here"
+        run: pnpm run build
         
       - name: Check package contents
-        run: npm pack --dry-run
+        run: pnpm pack --dry-run
 
   publish:
     needs: test
@@ -50,15 +55,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          registry-url: 'https://registry.npmjs.org/'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
           
       - name: Install dependencies
-        run: npm ci --save-dev @types/node --verbose || echo "npm install failed with exit code $?"
+        run: pnpm install
         
       - name: Build
-        run: npm run build --verbose || echo "Build would run here"
+        run: pnpm run build
         
       - name: Check package contents
-        run: npm pack --dry-run
+        run: pnpm pack --dry-run
         
       - name: Setup Git
         run: |
@@ -68,7 +79,7 @@ jobs:
       - name: Version package
         run: |
           # Install semantic-release
-          npm install -g semantic-release @semantic-release/git
+          pnpm add -g semantic-release @semantic-release/git
           
           # Configure semantic-release
           npx semantic-release
@@ -78,13 +89,13 @@ jobs:
         
       - name: Check version
         run: |
-          if [ "$(npm version | grep -o '".*"' | tr -d '"')" = "$(npm view . version)" ]; then
+          if [ "$(pnpm version | grep -o '".*"' | tr -d '"')" = "$(pnpm view . version)" ]; then
             echo "Version hasn't been updated. Please update the version in package.json before publishing."
             exit 1
           fi
         
       - name: Publish to npm
-        run: npm publish
+        run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           
