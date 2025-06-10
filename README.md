@@ -72,6 +72,21 @@ yarn add yasm
 pnpm add yasm
 ```
 
+## 🔧 **Troubleshooting**
+
+### Windows-specific npm issue with Rollup
+
+If you encounter this error:
+```
+Error: Cannot find module @rollup/rollup-win32-x64-msvc
+```
+
+Try one of these solutions:
+1. Use `pnpm` or `yarn` instead of npm
+2. Or with npm: Delete `node_modules` and `package-lock.json`, then run `npm install`
+
+This is a known npm bug: [npm/cli#4828](https://github.com/npm/cli/issues/4828)
+
 ## 🚀 **Quick Start**
 
 ### Basic Usage
