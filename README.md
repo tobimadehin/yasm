@@ -22,7 +22,6 @@ useEffect(() => { fetchUser().then(setUser) }, []);
 const { data: user } = useData('user', fetchUser, '5m');
 ```
 
-## ✨ **Enhanced Features**
 
 ### 🔄 **Stale-While-Revalidate**
 Show cached data instantly, fetch fresh data in background
