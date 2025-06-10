@@ -263,9 +263,10 @@ export class YasmStore {
     if (now - item.lastAccess > throttleMs) {
       item.hits++;
       item.lastAccess = now;
-      this.moveToHead(key);
       this.saveToStorage(key, item);
     }
+
+    this.moveToHead(key);
 
     return hasData(item) ? item.data : null;
   }
