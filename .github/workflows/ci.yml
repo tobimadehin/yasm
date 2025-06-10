@@ -10,7 +10,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
-  id-token: write  # Required for npm provenance
+  id-token: write  
 
 jobs:
   test:
@@ -50,7 +50,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: 'https://registry.npmjs.org'
           
       - name: Install dependencies
         run: npm ci --save-dev @types/node --verbose || echo "npm install failed with exit code $?"
