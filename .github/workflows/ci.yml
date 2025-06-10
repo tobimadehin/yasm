@@ -78,11 +78,11 @@ jobs:
           
       - name: Version package
         run: |
-          # Install semantic-release
-          pnpm add -g semantic-release @semantic-release/git
+          # Install semantic-release 
+          pnpm add -D semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/npm @semantic-release/git
           
           # Configure semantic-release
-          npx semantic-release
+          pnpm semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
