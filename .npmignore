@@ -1,0 +1,17 @@
+# .npmignore
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+.coverage/
+vitest.config.ts
+jest.config.js
+tsconfig.json
+tsconfig.build.json
+src/
+.github/
+.vscode/
+*.log
+.DS_Store

@@ -1,6 +1,6 @@
 {
   "name": "yasm",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "type": "module",
   "description": "YASM is a straightforward, lightweight state management library for React that simplifies data fetching and caching.",
   "main": "./dist/index.cjs",
@@ -15,12 +15,8 @@
     "./debug": {
       "types": "./dist/debug/index.d.ts",
       "import": "./dist/debug/index.js",
-      "require": "./dist/debug/index.cjs"
-    },
-    "./persist": {
-      "types": "./dist/persist/index.d.ts",
-      "import": "./dist/persist/index.js",
-      "require": "./dist/persist/index.cjs"
+      "require": "./dist/debug/index.cjs",
+      "default": "./dist/debug/index.js"
     }
   },
   "files": [
@@ -29,11 +25,13 @@
   ],
   "scripts": {
     "build": "cross-env NODE_ENV=production tsup",
-    "build:core": "cross-env NODE_ENV=production YASM_CORE_ONLY=true tsup",
-    "build:no-persist": "cross-env NODE_ENV=production YASM_NO_PERSIST=true tsup",
+    "build:debug": "cross-env NODE_ENV=development tsup",
     "dev": "cross-env NODE_ENV=development tsup --watch",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run type-check && npm run build"
+    "prepublishOnly": "npm run type-check && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "react",
@@ -51,11 +49,16 @@
     "react": ">=16.8.0"
   },
   "devDependencies": {
-    "@rollup/rollup-win32-x64-msvc": "^4.41.1",
+    "@rollup/rollup-win32-x64-msvc": "^4.42.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^18.0.0",
+    "@vitest/coverage-v8": "^3.2.2",
     "cross-env": "^7.0.3",
+    "jsdom": "^26.1.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.2"
   },
   "repository": {
     "type": "git",

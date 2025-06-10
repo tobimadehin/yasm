@@ -42,3 +42,6 @@ coverage/
 .cache/
 .npm/
 .eslintcache
+
+# Test files
+*test*

@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "ES2018",
         "module": "ESNext",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "lib": [
             "ES2018",
             "DOM",
@@ -25,7 +25,7 @@
     },
     "include": [
         "src/**/*"
-    ],
+, "vitest.setup.ts"    ],
     "exclude": [
         "node_modules",
         "dist",

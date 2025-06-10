@@ -1,6 +1,6 @@
 # YASM - Yet Another State Manager
 
-YASM is a straightforward, lightweight state management library for React that simplifies data fetching and caching.
+YASM is a lightweight state management library that simplifies data fetching and caching, with no external dependencies.
 
 [![npm version](https://badge.fury.io/js/yasm.svg)](https://badge.fury.io/js/yasm)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
@@ -8,7 +8,7 @@ YASM is a straightforward, lightweight state management library for React that s
 
 ## ⚡ What's is YASM
 
-YASM is a complete rewrite inspired by real-world usage in high-frequency applications like trading dashboards and live data systems. It brings enterprise-grade features while maintaining the simplicity you love.
+A lightweight state manager built on React hooks. No additional dependencies, no boilerplate code. Includes automatic localStorage persistence and real-time state synchronization.
 
 ### 🎯 **Core Philosophy: "useState but better"**
 
@@ -27,8 +27,7 @@ const { data: user } = useData('user', fetchUser, '5m');
 Show cached data instantly, fetch fresh data in background
 ```tsx
 const { data, isFromCache } = useData('posts', fetchPosts, '30s');
-// ✅ Instant loading with cached data
-// ✅ Fresh data fetched in background
+// Shows cached data immediately while fetching fresh data
 ```
 
 ### 🎯 **Request Deduplication**
@@ -43,53 +42,25 @@ function UserBadge() {
 }
 ```
 
-### 💾 **Smart Persistence**
-Automatic localStorage/sessionStorage with graceful fallbacks
-```tsx
-import { usePersistentData } from 'yasm/persist';
-
-const { data } = usePersistentData(
-  'user-settings', 
-  fetchSettings, 
-  '1h',
-  { storageType: 'localStorage' }
-);
-// ✅ Survives page refresh
-// ✅ Cross-tab synchronization
-// ✅ Automatic cleanup
-```
 
 ### 🔥 **Auto-Refresh**
 Human-readable intervals for real-time data
 ```tsx
-const { data: metrics } = useData('dashboard', fetchMetrics, '10s');
-const { data: prices } = useData('crypto-btc', fetchPrice, '1s');  // High frequency
-const { data: news } = useData('news', fetchNews, '5m');           // Reasonable refresh
+const { data: prices } = useData('customer-requests', fetchPrice, '10s');  // High frequency
+const { data: metrics } = useData('dashboard', fetchMetrics, '30s');  // Moderate frequency
+const { data: news } = useData('user-profile', fetchNews, '5m');           // Low frequency
 ```
 
 ### 🛡️ **Graceful Error Handling**
 Show cached data when requests fail
 ```tsx
 const { data, error, isFromCache } = useData('api/data', fetcher);
-// ✅ Network fails → shows cached data
-// ✅ Displays error state 
-// ✅ User can still interact with cached data
+// Shows cached data when network requests fail
+// Provides error information
+// Maintains functionality with cached data
 ```
 
-### 🐛 **Production-Ready Debug Tools**
-Lightweight monitoring that tree-shakes in production
-```tsx
-import { YasmDebugMonitor } from 'yasm/debug';
 
-function App() {
-  return (
-    <div>
-      <YourApp />
-      <YasmDebugMonitor /> {/* Only in development */}
-    </div>
-  );
-}
-```
 
 ## 📦 **Installation**
 
@@ -122,7 +93,7 @@ function UserProfile({ userId }) {
 
   if (loading && !user) return <Skeleton />;
   if (error && !user) return <Error error={error} />;
-
+  
   return (
     <div>
       <h1>{user.name}</h1>
@@ -132,16 +103,6 @@ function UserProfile({ userId }) {
     </div>
   );
 }
-```
-
-### Time Intervals
-Human-readable format instead of milliseconds:
-```tsx
-useData('data', fetcher, '30s');  // 30 seconds
-useData('data', fetcher, '5m');   // 5 minutes  
-useData('data', fetcher, '2h');   // 2 hours
-useData('data', fetcher, '1d');   // 1 day
-useData('data', fetcher, false);  // No auto-refresh
 ```
 
 ### Advanced Options
@@ -154,102 +115,58 @@ const { data } = useData('key', fetcher, '1m', {
 });
 ```
 
-## 🏗️ **Real-World Examples**
-
-### Trading Dashboard
-```tsx
-function TradingDashboard() {
-  // High-frequency price updates
-  const { data: prices } = useData('crypto-prices', fetchPrices, '1s');
-  
-  // Moderate frequency for portfolio
-  const { data: portfolio } = useData('portfolio', fetchPortfolio, '30s');
-  
-  // Low frequency for user settings
-  const { data: settings } = usePersistentData('settings', fetchSettings, '1h');
-
-  return (
-    <div>
-      <PriceChart data={prices} />
-      <Portfolio data={portfolio} />
-      <Settings data={settings} />
-    </div>
-  );
-}
-```
-
-### News Feed with Offline Support
-```tsx
-function NewsFeed() {
-  const { data: news, error, isFromCache } = useData(
-    'breaking-news', 
-    fetchNews, 
-    '2m'
-  );
-
-  return (
-    <div>
-      {error && isFromCache && (
-        <Banner>Showing cached news - connection issues</Banner>
-      )}
-      {news.map(article => <Article key={article.id} {...article} />)}
-    </div>
-  );
-}
-```
-
-### User Settings with Persistence
-```tsx
-import { usePersistentData } from 'yasm/persist';
-
-function UserSettings() {
-  const { data: settings, refresh } = usePersistentData(
-    'user-settings',
-    fetchSettings,
-    '1h',
-    { 
-      storageType: 'localStorage',
-      syncAcrossTabs: true 
-    }
-  );
-
-  return <SettingsForm data={settings} onSave={refresh} />;
-}
-```
-
-## 🛠️ **Advanced Features**
-
-### Persistence Options
-```tsx
-import { 
-  usePersistentData, 
-  configurePersistence,
-  enableCrossTabSync 
-} from 'yasm/persist';
-
-// Configure globally
-configurePersistence({
-  defaultStorageType: 'localStorage',
-  prefix: 'myapp_',
-  maxSize: 200,
-  enableCompression: true
-});
-
-// Enable cross-tab sync
-const cleanup = enableCrossTabSync();
-```
 
 ### Debug & Monitoring
+![YASM Debug Monitor](monitor.gif)
+
 ```tsx
+import { useData } from "yasm";
 import { 
   YasmDebugMonitor, 
-  useCacheInspector,
-  useCacheMonitor 
 } from 'yasm/debug';
 
 function DevTools() {
+  const { data: prices } = useData(
+    'customer-requests',
+    fetchPrices,
+    '1s'
+  );
+
+  return (
+    <div>
+      <h3>Hello Yasm!</h3>
+      <YasmDebugMonitor />
+    </div>
+  );
+}
+```
+
+Need additional control? You can bind keyboard shortcuts
+
+```tsx
+import { 
+  useCacheInspector,
+  useCacheMonitor 
+} from 'yasm/debug';
+function DevTools() {
   const { stats, hasFailures, isHealthy } = useCacheInspector();
   const { show, hide, Monitor } = useCacheMonitor();
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + Shift + M to show monitor
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
+        show();
+      }
+      // Ctrl/Cmd + Shift + H to hide monitor
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'H') {
+        hide();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [show, hide]);
 
   return (
     <div>
@@ -260,6 +177,7 @@ function DevTools() {
   );
 }
 ```
+Note: Yasm Debug tools are automatically removed from production builds through tree-shaking in modern bundlers like Webpack, Rollup, and Vite
 
 ### Preloading
 ```tsx
@@ -272,21 +190,6 @@ await preload('user-profile', fetchUser, '10m');
 const { data: user } = useData('user-profile', fetchUser, '10m');
 ```
 
-## 📊 **Performance**
-
-- **Bundle Size**: ~2KB gzipped (core)
-- **Memory Usage**: Automatic LRU eviction
-- **Network**: Request deduplication
-- **Storage**: Automatic cleanup of expired items
-- **Tree Shaking**: Debug tools removed in production
-
-## 🔧 **Migration from v1**
-
-YASM is backward compatible:
-
-```tsx
-const { data } = useData('key', fetcher, '5m');
-```
 
 ## 🤝 **Contributing**
 
