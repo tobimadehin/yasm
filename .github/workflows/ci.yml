@@ -42,7 +42,7 @@ jobs:
         run: pnpm run build
         
       - name: Check package contents
-        run: pnpm pack --dry-run
+        run: pnpm pack
 
   publish:
     needs: test
@@ -69,7 +69,7 @@ jobs:
         run: pnpm run build
         
       - name: Check package contents
-        run: pnpm pack --dry-run
+        run: pnpm pack
         
       - name: Setup Git
         run: |
