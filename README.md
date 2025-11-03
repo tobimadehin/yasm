@@ -7,11 +7,11 @@ YASM is a lightweight state management library that simplifies data fetching and
 [![Minified Size](https://img.shields.io/bundlephobia/min/@tobimadehin/yasm)](https://bundlephobia.com/package/@tobimadehin/yasm)
 [![Gzipped Size](https://img.shields.io/bundlephobia/minzip/@tobimadehin/yasm)](https://bundlephobia.com/package/@tobimadehin/yasm)
 
-## ⚡ What's is YASM
+## What's is YASM
 
 A lightweight state manager built on React hooks. No additional dependencies, no boilerplate code. Includes automatic localStorage persistence and real-time state synchronization.
 
-### 🎯 **Core Philosophy: "Enhanced useState"**
+### **Core Philosophy: "Enhanced useState"**
 
 ```tsx
 // Before: useState
@@ -23,14 +23,14 @@ const { data: user } = useData('user', fetchUser, '5m');
 ```
 
 
-### 🔄 **Stale-While-Revalidate**
+### **Stale-While-Revalidate**
 Show cached data instantly, fetch fresh data in background
 ```tsx
 const { data, isFromCache } = useData('posts', fetchPosts, '30s');
 // Shows cached data immediately while fetching fresh data
 ```
 
-### 🎯 **Request Deduplication**
+### **Request Deduplication**
 Multiple components requesting same data = single network request
 ```tsx
 // Both components share the same request
@@ -43,7 +43,7 @@ function UserBadge() {
 ```
 
 
-### 🔥 **Auto-Refresh**
+### **Auto-Refresh**
 Human-readable intervals for real-time data
 ```tsx
 const { data: prices } = useData('customer-requests', fetchPrice, '10s');  // High frequency
@@ -51,7 +51,7 @@ const { data: metrics } = useData('dashboard', fetchMetrics, '30s');  // Moderat
 const { data: news } = useData('user-profile', fetchNews, '5m');           // Low frequency
 ```
 
-### 🛡️ **Graceful Error Handling**
+### **Graceful Error Handling**
 Show cached data when requests fail
 ```tsx
 const { data, error, isFromCache } = useData('api/data', fetcher);
@@ -62,7 +62,7 @@ const { data, error, isFromCache } = useData('api/data', fetcher);
 
 
 
-## 📦 **Installation**
+## **Installation**
 
 ```bash
 npm install yasm
@@ -72,7 +72,7 @@ yarn add yasm
 pnpm add yasm
 ```
 
-## 🔧 **Troubleshooting**
+## **Troubleshooting**
 
 ### Windows-specific npm issue with Rollup
 
@@ -87,7 +87,7 @@ Try one of these solutions:
 
 This is a known npm bug: [npm/cli#4828](https://github.com/npm/cli/issues/4828)
 
-## 🚀 **Quick Start**
+## **Quick Start**
 
 ### Basic Usage
 ```tsx
@@ -205,25 +205,8 @@ await preload('user-profile', fetchUser, '10m');
 const { data: user } = useData('user-profile', fetchUser, '10m');
 ```
 
-
-## 🤝 **Contributing**
-
-YASM was built based on real-world feedback from developers building high-frequency applications. We welcome contributions!
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 **License**
+## **License**
 
 MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 **Acknowledgments**
-
-- Inspired by SWR, React Query, and real-world usage in production apps
-- Built for developers who need simple, reliable caching without the complexity
-- Tested in high-frequency trading dashboards, live sports apps, and real-time monitoring systems
 
 ---
