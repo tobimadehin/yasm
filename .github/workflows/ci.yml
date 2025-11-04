@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'
-      
+
 permissions:
   contents: write
   issues: write
@@ -69,11 +69,9 @@ jobs:
         
       - name: Build
         run: pnpm run build:debug
-        
-      - name: Setup Git
-        run: |
-          git config --global user.name 'semantic-release-bot'
-          git config --global user.email 'semantic-release-bot@martynus.net'
+
+      - name: Extract version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           
       - name: Create .npmrc
         run: |
