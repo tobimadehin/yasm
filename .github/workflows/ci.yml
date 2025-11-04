@@ -82,10 +82,33 @@ jobs:
           echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          
-      - name: Release
-        run: pnpm semantic-release
+             
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body: |
+            ## Changes in ${{ env.VERSION }}
+            
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+            ## Installation
+            
+            ```bash
+            npm install @tobimadehin/yasm@${{ env.VERSION }}
+            ```
+            
+            ## Documentation
+            
+            Visit [README](https://github.com/tobimadehin/yasm#) for usage examples and API reference.
+          draft: false
+          prerelease: false
+
+      - name: Publish to NPM
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           
