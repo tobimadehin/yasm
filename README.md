@@ -11,82 +11,6 @@ YASM is a lightweight state management library that simplifies data fetching and
 
 A lightweight state manager built on React hooks. No additional dependencies, no boilerplate code. Includes automatic localStorage persistence and real-time state synchronization.
 
-### **Core Philosophy: "Enhanced useState"**
-
-```tsx
-// Before: useState
-const [user, setUser] = useState(null);
-useEffect(() => { fetchUser().then(setUser) }, []);
-
-// After: YASM
-const { data: user } = useData('user', fetchUser, '5m');
-```
-
-
-### **Stale-While-Revalidate**
-Show cached data instantly, fetch fresh data in background
-```tsx
-const { data, isFromCache } = useData('posts', fetchPosts, '30s');
-// Shows cached data immediately while fetching fresh data
-```
-
-### **Request Deduplication**
-Multiple components requesting same data = single network request
-```tsx
-// Both components share the same request
-function UserProfile() {
-  const { data } = useData('user-123', () => fetchUser(123));
-}
-function UserBadge() {
-  const { data } = useData('user-123', () => fetchUser(123)); // No duplicate request!
-}
-```
-
-
-### **Auto-Refresh**
-Human-readable intervals for real-time data
-```tsx
-const { data: prices } = useData('customer-requests', fetchPrice, '10s');  // High frequency
-const { data: metrics } = useData('dashboard', fetchMetrics, '30s');  // Moderate frequency
-const { data: news } = useData('user-profile', fetchNews, '5m');           // Low frequency
-```
-
-### **Graceful Error Handling**
-Show cached data when requests fail
-```tsx
-const { data, error, isFromCache } = useData('api/data', fetcher);
-// Shows cached data when network requests fail
-// Provides error information
-// Maintains functionality with cached data
-```
-
-
-
-## **Installation**
-
-```bash
-npm install yasm
-# or
-yarn add yasm
-# or
-pnpm add yasm
-```
-
-## **Troubleshooting**
-
-### Windows-specific npm issue with Rollup
-
-If you encounter this error:
-```
-Error: Cannot find module @rollup/rollup-win32-x64-msvc
-```
-
-Try one of these solutions:
-1. Use `pnpm` or `yarn` instead of npm
-2. Or with npm: Delete `node_modules` and `package-lock.json`, then run `npm install`
-
-This is a known npm bug: [npm/cli#4828](https://github.com/npm/cli/issues/4828)
-
 ## **Quick Start**
 
 ### Basic Usage
@@ -130,6 +54,69 @@ const { data } = useData('key', fetcher, '1m', {
 });
 ```
 
+---
+### **Stale-While-Revalidate**
+Show cached data instantly, fetch fresh data in background
+```tsx
+const { data, isFromCache } = useData('posts', fetchPosts, '30s');
+// Shows cached data immediately while fetching fresh data
+```
+
+### **Request Deduplication**
+Multiple components requesting same data = single network request
+```tsx
+// Both components share the same request
+function UserProfile() {
+  const { data } = useData('user-123', () => fetchUser(123));
+}
+function UserBadge() {
+  const { data } = useData('user-123', () => fetchUser(123)); // No duplicate request!
+}
+```
+
+### **Auto-Refresh**
+Human-readable intervals for real-time data
+```tsx
+const { data: prices } = useData('customer-requests', fetchPrice, '10s');  // High frequency
+const { data: metrics } = useData('dashboard', fetchMetrics, '30s');  // Moderate frequency
+const { data: news } = useData('user-profile', fetchNews, '5m');           // Low frequency
+```
+
+### **Graceful Error Handling**
+Show cached data when requests fail
+```tsx
+const { data, error, isFromCache } = useData('api/data', fetcher);
+// Shows cached data when network requests fail
+// Provides error information
+// Maintains functionality with cached data
+```
+
+---
+## **Installation**
+
+```bash
+npm install yasm
+# or
+yarn add yasm
+# or
+pnpm add yasm
+```
+
+---
+## **Troubleshooting**
+
+### Windows-specific npm issue with Rollup
+
+If you encounter this error:
+```
+Error: Cannot find module @rollup/rollup-win32-x64-msvc
+```
+
+Try one of these solutions:
+1. Use `pnpm` or `yarn` instead of npm
+2. Or with npm: Delete `node_modules` and `package-lock.json`, then run `npm install`
+
+This is a known npm bug: [npm/cli#4828](https://github.com/npm/cli/issues/4828)
 
 ### Debug & Monitoring
 ![YASM Debug Monitor](monitor.gif)
